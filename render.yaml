@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: jillet-dental
+    runtime: node
+    plan: free
+    buildCommand: npm install --prefix server && npm install --prefix client --include=dev && npm run build --prefix client
+    startCommand: NODE_ENV=production npm start --prefix server
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_DB
+        value: jillet_dental
+      - key: JWT_SECRET
+        sync: false
+      - key: AUTH_USERNAME
+        sync: false
+      - key: AUTH_PASSWORD
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: CLINIC_NAME
+        sync: false
+      - key: CLINIC_PHONE
+        sync: false
+      - key: CLINIC_LOCATION
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: MSG91_AUTH_KEY
+        sync: false
+      - key: MSG91_FLOW_ID
+        sync: false
+      - key: MSG91_SENDER_ID
+        sync: false
