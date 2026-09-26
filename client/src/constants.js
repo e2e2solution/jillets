@@ -1,7 +1,7 @@
 export const CLINIC = {
   name: 'Jillet Dental Care',
   location: 'Pallikkara',
-  phone: '9567802796',
+  phone: '91 95678 02796',
   tagline: 'Premium Dental Clinic'
 }
 

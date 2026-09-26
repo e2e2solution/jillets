@@ -22,7 +22,7 @@ export const MEDICAL_HISTORY_KEYS = [
 export function clinicInfo() {
   return {
     name: process.env.CLINIC_NAME || 'Jillet Dental Care',
-    phone: process.env.CLINIC_PHONE || '9567802796',
+    phone: process.env.CLINIC_PHONE || '91 95678 02796',
     location: process.env.CLINIC_LOCATION || 'Pallikkara'
   }
 }
