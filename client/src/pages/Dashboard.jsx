@@ -185,7 +185,7 @@ export default function Dashboard() {
             <div className="page-head">
               <div>
                 <h2>Each customer · paid in {year}</h2>
-                <p className="muted">Open a patient to see visit-wise OP, treatment, other, and amount taken.</p>
+                <p className="muted">Open a patient to see visit-wise OP, treatment, other, cash and GPay.</p>
               </div>
             </div>
             {data.patients.length === 0 ? <p className="muted">No billed visits this year.</p> : (

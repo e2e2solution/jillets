@@ -72,6 +72,15 @@ export function visitBilled(record) {
   )
 }
 
+export function visitPaid(record) {
+  const cash = money(record?.cash_amount)
+  const gpay = money(record?.gpay_amount)
+  if (cash || gpay || record?.cash_date || record?.gpay_date) {
+    return money(cash + gpay)
+  }
+  return money(record?.amount_paid)
+}
+
 export function formatInr(value) {
   const amount = money(value)
   return `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`
@@ -80,7 +89,9 @@ export function formatInr(value) {
 export function paymentSummary(records) {
   const rows = (records || []).map((record) => {
     const billed = visitBilled(record)
-    const paid = money(record.amount_paid)
+    const cash = money(record.cash_amount)
+    const gpay = money(record.gpay_amount)
+    const paid = visitPaid(record)
     return {
       record_id: record._id,
       visit_date: record.visit_date,
@@ -89,10 +100,13 @@ export function paymentSummary(records) {
       op_amount: money(record.op_amount),
       treatment_amount: money(record.treatment_amount),
       other_amount: money(record.other_amount),
+      cash_amount: cash,
+      cash_date: record.cash_date || '',
+      gpay_amount: gpay,
+      gpay_date: record.gpay_date || '',
       billed,
       paid,
-      balance: money(billed - paid),
-      billing_notes: record.billing_notes || ''
+      balance: money(billed - paid)
     }
   }).sort((a, b) => String(b.visit_date).localeCompare(String(a.visit_date)))
 
@@ -100,10 +114,12 @@ export function paymentSummary(records) {
     op: money(acc.op + row.op_amount),
     treatment: money(acc.treatment + row.treatment_amount),
     other: money(acc.other + row.other_amount),
+    cash: money(acc.cash + row.cash_amount),
+    gpay: money(acc.gpay + row.gpay_amount),
     billed: money(acc.billed + row.billed),
     paid: money(acc.paid + row.paid),
     balance: money(acc.balance + row.balance)
-  }), { op: 0, treatment: 0, other: 0, billed: 0, paid: 0, balance: 0 })
+  }), { op: 0, treatment: 0, other: 0, cash: 0, gpay: 0, billed: 0, paid: 0, balance: 0 })
 
   return { rows, totals }
 }

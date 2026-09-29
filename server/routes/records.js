@@ -77,7 +77,17 @@ function normalizeRecord(body) {
   const opAmount = money(body?.op_amount)
   const treatmentAmount = money(body?.treatment_amount)
   const otherAmount = money(body?.other_amount)
-  const amountPaid = money(body?.amount_paid)
+  const cashAmount = money(body?.cash_amount)
+  const gpayAmount = money(body?.gpay_amount)
+  let cashDate = clip(body?.cash_date, 10)
+  let gpayDate = clip(body?.gpay_date, 10)
+  if (cashDate && !isIsoDate(cashDate)) throw httpError(400, 'Cash date must be YYYY-MM-DD')
+  if (gpayDate && !isIsoDate(gpayDate)) throw httpError(400, 'GPay date must be YYYY-MM-DD')
+  if (!cashAmount) cashDate = ''
+  else if (!cashDate) cashDate = visitDate
+  if (!gpayAmount) gpayDate = ''
+  else if (!gpayDate) gpayDate = visitDate
+  const amountPaid = money(cashAmount + gpayAmount)
   return {
     patient_id: patientId,
     category: category.id,
@@ -91,8 +101,11 @@ function normalizeRecord(body) {
     op_amount: opAmount,
     treatment_amount: treatmentAmount,
     other_amount: otherAmount,
+    cash_amount: cashAmount,
+    cash_date: cashDate,
+    gpay_amount: gpayAmount,
+    gpay_date: gpayDate,
     amount_paid: amountPaid,
-    billing_notes: clip(body?.billing_notes, 2000),
     assisting_doctor: clip(body?.assisting_doctor, 200),
     next_appointment: nextAppointment,
     appointment_time: appointmentTime

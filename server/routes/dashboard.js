@@ -45,6 +45,8 @@ router.get('/revenue', asyncHandler(async (req, res) => {
       op_amount: 1,
       treatment_amount: 1,
       other_amount: 1,
+      cash_amount: 1,
+      gpay_amount: 1,
       amount_paid: 1,
       assisting_doctor: 1
     })
@@ -100,7 +102,11 @@ router.get('/revenue', asyncHandler(async (req, res) => {
     const op = money(record.op_amount)
     const treatment = money(record.treatment_amount)
     const other = money(record.other_amount)
-    const paid = money(record.amount_paid)
+    const cash = money(record.cash_amount)
+    const gpay = money(record.gpay_amount)
+    const paid = (cash || gpay)
+      ? money(cash + gpay)
+      : money(record.amount_paid)
     const billed = money(op + treatment + other)
     const key = monthKey(record.visit_date)
     const bucket = byMonth.get(key)

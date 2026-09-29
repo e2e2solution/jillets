@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { api } from '../api'
 import { getUser } from '../api'
-import { CATEGORIES, HISTORY_FIELDS, emptyMedicine, formatDate, formatInr, formatMedicine, formatWhen, genderLabel, medicineTracker, paymentSummary, visitBilled } from '../constants'
+import { CATEGORIES, HISTORY_FIELDS, emptyMedicine, formatDate, formatInr, formatMedicine, formatWhen, genderLabel, medicineTracker, paymentSummary, visitBilled, visitPaid } from '../constants'
 import ReminderActions from '../components/ReminderActions'
 import PatientReport from '../components/PatientReport'
 
@@ -237,19 +237,18 @@ export default function PatientDetail() {
           </div>
         </div>
         {payments.rows.length === 0 ? (
-          <p className="muted">No visit billing yet. Add OP / treatment / paid amounts when saving a visit.</p>
+          <p className="muted">No visit payments yet. Add OP / treatment / other and cash or GPay when saving a visit.</p>
         ) : (
           <div className="table-wrap">
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Visit date</th>
-                  <th>Dept</th>
+                  <th>Visit</th>
                   <th>OP</th>
                   <th>Treatment</th>
                   <th>Other</th>
-                  <th>Total</th>
-                  <th>Paid</th>
+                  <th>Cash</th>
+                  <th>GPay</th>
                   <th>Balance</th>
                   <th></th>
                 </tr>
@@ -257,13 +256,18 @@ export default function PatientDetail() {
               <tbody>
                 {payments.rows.map((row) => (
                   <tr key={row.record_id}>
-                    <td data-label="Visit date">{formatDate(row.visit_date)}</td>
-                    <td data-label="Dept">{row.category_label || '—'}</td>
+                    <td data-label="Visit">{formatDate(row.visit_date)}</td>
                     <td data-label="OP">{formatInr(row.op_amount)}</td>
                     <td data-label="Treatment">{formatInr(row.treatment_amount)}</td>
                     <td data-label="Other">{formatInr(row.other_amount)}</td>
-                    <td data-label="Total">{formatInr(row.billed)}</td>
-                    <td data-label="Paid">{formatInr(row.paid)}</td>
+                    <td data-label="Cash">
+                      {formatInr(row.cash_amount)}
+                      {row.cash_date ? ` · ${formatDate(row.cash_date)}` : ''}
+                    </td>
+                    <td data-label="GPay">
+                      {formatInr(row.gpay_amount)}
+                      {row.gpay_date ? ` · ${formatDate(row.gpay_date)}` : ''}
+                    </td>
                     <td data-label="Balance">{formatInr(row.balance)}</td>
                     <td data-label="Edit">
                       {canEdit ? (
@@ -410,6 +414,9 @@ export default function PatientDetail() {
 function VisitCard({ record, patient, canEdit, onDelete, onEditMedicine, onAddMedicine }) {
   const medicines = record.medicines || []
   const billed = visitBilled(record)
+  const paid = visitPaid(record)
+  const cash = Number(record.cash_amount) || 0
+  const gpay = Number(record.gpay_amount) || 0
   return (
     <article className="visit">
       <div className="visit-top">
@@ -423,10 +430,21 @@ function VisitCard({ record, patient, canEdit, onDelete, onEditMedicine, onAddMe
         <div><dt>OP</dt><dd>{formatInr(record.op_amount)}</dd></div>
         <div><dt>Treatment</dt><dd>{formatInr(record.treatment_amount)}</dd></div>
         <div><dt>Other</dt><dd>{formatInr(record.other_amount)}</dd></div>
-        <div><dt>Total / Paid</dt><dd>{formatInr(billed)} / {formatInr(record.amount_paid)}</dd></div>
-        {record.billing_notes && (
-          <div className="wide"><dt>Billing notes</dt><dd>{record.billing_notes}</dd></div>
-        )}
+        <div>
+          <dt>Cash</dt>
+          <dd>
+            {formatInr(cash)}
+            {record.cash_date ? ` · ${formatDate(record.cash_date)}` : ''}
+          </dd>
+        </div>
+        <div>
+          <dt>GPay</dt>
+          <dd>
+            {formatInr(gpay)}
+            {record.gpay_date ? ` · ${formatDate(record.gpay_date)}` : ''}
+          </dd>
+        </div>
+        <div><dt>Total / Paid</dt><dd>{formatInr(billed)} / {formatInr(paid)}</dd></div>
         <div className="wide">
           <dt>Medicines</dt>
           <dd>

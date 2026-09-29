@@ -36,8 +36,10 @@ export default function RecordForm() {
     op_amount: '',
     treatment_amount: '',
     other_amount: '',
-    amount_paid: '',
-    billing_notes: '',
+    cash_amount: '',
+    cash_date: '',
+    gpay_amount: '',
+    gpay_date: '',
     assisting_doctor: '',
     next_appointment: '',
     appointment_time: ''
@@ -76,8 +78,10 @@ export default function RecordForm() {
             op_amount: record.op_amount ?? '',
             treatment_amount: record.treatment_amount ?? '',
             other_amount: record.other_amount ?? '',
-            amount_paid: record.amount_paid ?? '',
-            billing_notes: record.billing_notes || '',
+            cash_amount: record.cash_amount ?? (record.amount_paid && !record.gpay_amount ? record.amount_paid : ''),
+            cash_date: record.cash_date || record.visit_date || '',
+            gpay_amount: record.gpay_amount ?? '',
+            gpay_date: record.gpay_date || record.visit_date || '',
             assisting_doctor: record.assisting_doctor || '',
             next_appointment: record.next_appointment || '',
             appointment_time: record.appointment_time || ''
@@ -104,6 +108,14 @@ export default function RecordForm() {
         next.medicines = current.medicines.map((med) => (
           med.given_date ? med : { ...med, given_date: value }
         ))
+        if (!current.cash_date) next.cash_date = value
+        if (!current.gpay_date) next.gpay_date = value
+      }
+      if (key === 'cash_amount' && value && !current.cash_date) {
+        next.cash_date = current.visit_date || ''
+      }
+      if (key === 'gpay_amount' && value && !current.gpay_date) {
+        next.gpay_date = current.visit_date || ''
       }
       return next
     })
@@ -153,7 +165,10 @@ export default function RecordForm() {
       op_amount: form.op_amount === '' ? 0 : Number(form.op_amount),
       treatment_amount: form.treatment_amount === '' ? 0 : Number(form.treatment_amount),
       other_amount: form.other_amount === '' ? 0 : Number(form.other_amount),
-      amount_paid: form.amount_paid === '' ? 0 : Number(form.amount_paid)
+      cash_amount: form.cash_amount === '' ? 0 : Number(form.cash_amount),
+      cash_date: form.cash_date || '',
+      gpay_amount: form.gpay_amount === '' ? 0 : Number(form.gpay_amount),
+      gpay_date: form.gpay_date || ''
     }
     try {
       if (editing) {
@@ -323,8 +338,8 @@ export default function RecordForm() {
       </fieldset>
 
       <fieldset className="med-box">
-        <legend>Hospital billing (internal only)</legend>
-        <p className="muted">Not sent in WhatsApp or email reminders. For clinic accounts only.</p>
+        <legend>Payment details</legend>
+        <p className="muted">OP, treatment, other — then cash / GPay with date. Internal only.</p>
         <div className="form-grid">
           <label>
             OP amount (₹)
@@ -349,7 +364,7 @@ export default function RecordForm() {
             />
           </label>
           <label>
-            Other amount (₹)
+            Other (₹)
             <input
               type="number"
               min="0"
@@ -360,22 +375,41 @@ export default function RecordForm() {
             />
           </label>
           <label>
-            Amount taken / paid (₹)
+            Cash (₹)
             <input
               type="number"
               min="0"
               step="0.01"
-              value={form.amount_paid}
-              onChange={(event) => setField('amount_paid', event.target.value)}
+              value={form.cash_amount}
+              onChange={(event) => setField('cash_amount', event.target.value)}
               placeholder="0"
             />
           </label>
-          <label className="span-2">
-            Billing notes
+          <label>
+            Cash date
             <input
-              value={form.billing_notes}
-              onChange={(event) => setField('billing_notes', event.target.value)}
-              placeholder="Partial payment / UPI / cash"
+              type="date"
+              value={form.cash_date}
+              onChange={(event) => setField('cash_date', event.target.value)}
+            />
+          </label>
+          <label>
+            GPay (₹)
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              value={form.gpay_amount}
+              onChange={(event) => setField('gpay_amount', event.target.value)}
+              placeholder="0"
+            />
+          </label>
+          <label>
+            GPay date
+            <input
+              type="date"
+              value={form.gpay_date}
+              onChange={(event) => setField('gpay_date', event.target.value)}
             />
           </label>
         </div>
